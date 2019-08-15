@@ -11,4 +11,4 @@ It is a level 3 project on the Richard Maturity Model scale where resources are 
 
 To manage persistence I used the implementation of JPA, Hibernate with the H2 in memory database.
 
-Simulation of the communication with the microservice and observation of the answers with Postman.
+Simulation of the communication with the microservice and observation of the responses with Postman.
