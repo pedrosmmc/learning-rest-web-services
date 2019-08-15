@@ -5,7 +5,9 @@ import com.pedrocoelho.restwebservices.learningrestwebservices.comment.Comment;
 import com.pedrocoelho.restwebservices.learningrestwebservices.user.User;
 
 import javax.persistence.*;
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
 import java.util.Date;
 import java.util.List;
 
@@ -20,8 +22,12 @@ public class Post {
 
     @GeneratedValue
     @JsonIgnore
+    @FutureOrPresent
+    @NotNull
     private Date created;
 
+    @GeneratedValue
+    @FutureOrPresent
     private Date published;
 
     private boolean isPublished;
@@ -30,7 +36,7 @@ public class Post {
     @JsonIgnore
     private User user;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Comment> comments;
 
     public Post() {
