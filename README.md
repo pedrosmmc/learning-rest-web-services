@@ -3,7 +3,7 @@ Learning REST Web Services
 
 This project consists of a simple RESTful Web service for learning purposes and to expose my knowledge.
 
-The project is a backend service to manage basic blog, where we have users who make posts and comments on posts.
+The project is a backend service to serve basic blog app, where we have users who make posts and comments on posts.
 
 It was built using JavaEE 12 using the Spring framework (Spring Boot, Spring, Spring Starter Web, Spring MVC, Spring Security), and managed by Maven.
 
