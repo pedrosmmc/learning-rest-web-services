@@ -2,7 +2,6 @@ package com.pedrocoelho.restwebservices.learningrestwebservices.user;
 
 import com.pedrocoelho.restwebservices.learningrestwebservices.comment.Comment;
 import com.pedrocoelho.restwebservices.learningrestwebservices.post.Post;
-import org.hibernate.annotations.Where;
 import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
@@ -20,11 +19,11 @@ public class User extends RepresentationModel<User> {
     @GeneratedValue
     private Long id;
 
-    @NotNull
-    @Size(min = 2, message = "Name should have at least 2 characters")
+    @NotNull(message = "Who is the owner of this ad?")
+    @Size(min = 2, message = "Name should have at least 2 characters.")
     private String name;
 
-    @NotNull
+    @NotNull(message = "You need to provide a valid email.")
     @Email
     private String email;
 

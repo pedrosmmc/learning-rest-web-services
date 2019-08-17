@@ -3,11 +3,12 @@ package com.pedrocoelho.restwebservices.learningrestwebservices.post;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pedrocoelho.restwebservices.learningrestwebservices.comment.Comment;
 import com.pedrocoelho.restwebservices.learningrestwebservices.user.User;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PastOrPresent;
 import java.util.Date;
 import java.util.List;
 
@@ -22,11 +23,13 @@ public class Post {
 
     @GeneratedValue
     @JsonIgnore
+    @CreatedDate
     @FutureOrPresent
     @NotNull
     private Date created;
 
     @GeneratedValue
+    @DateTimeFormat
     @FutureOrPresent
     private Date published;
 
@@ -75,11 +78,11 @@ public class Post {
         this.created = created;
     }
 
-    public Date getPublished() {
+    public Date getPublishedDate() {
         return published;
     }
 
-    public void setPublished(Date published) {
+    public void setPublishedDate(Date published) {
         this.published = published;
     }
 
@@ -89,6 +92,12 @@ public class Post {
 
     public void setPublished() {
         if (isPublished)
+            isPublished = false;
+        isPublished = true;
+    }
+
+    public void setPublished(Boolean published) {
+        if (published)
             isPublished = false;
         isPublished = true;
     }

@@ -3,6 +3,7 @@ package com.pedrocoelho.restwebservices.learningrestwebservices.comment;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pedrocoelho.restwebservices.learningrestwebservices.post.Post;
 import com.pedrocoelho.restwebservices.learningrestwebservices.user.User;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -18,7 +19,8 @@ public class Comment {
     @NotNull
     private String text;
 
-    @GeneratedValue
+    @CreatedDate
+    @GeneratedValue //TODO: gerar a data
     private Date created;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,6 +32,8 @@ public class Comment {
     @JoinColumn
     @JsonIgnore
     private Post post;
+
+
 
     public Date getCreated() {
         return created;
