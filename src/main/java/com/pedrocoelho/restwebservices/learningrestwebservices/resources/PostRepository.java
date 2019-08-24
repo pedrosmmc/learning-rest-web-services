@@ -1,5 +1,6 @@
-package com.pedrocoelho.restwebservices.learningrestwebservices.post;
+package com.pedrocoelho.restwebservices.learningrestwebservices.resources;
 
+import com.pedrocoelho.restwebservices.learningrestwebservices.models.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

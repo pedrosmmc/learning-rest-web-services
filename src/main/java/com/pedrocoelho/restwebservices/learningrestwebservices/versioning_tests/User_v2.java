@@ -1,6 +1,6 @@
 package com.pedrocoelho.restwebservices.learningrestwebservices.versioning_tests;
 
-import com.pedrocoelho.restwebservices.learningrestwebservices.user.User;
+import com.pedrocoelho.restwebservices.learningrestwebservices.models.User;
 
 import javax.validation.constraints.NotNull;
 

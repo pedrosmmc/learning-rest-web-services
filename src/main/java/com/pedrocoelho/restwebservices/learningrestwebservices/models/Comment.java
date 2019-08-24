@@ -1,8 +1,8 @@
-package com.pedrocoelho.restwebservices.learningrestwebservices.comment;
+package com.pedrocoelho.restwebservices.learningrestwebservices.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.pedrocoelho.restwebservices.learningrestwebservices.post.Post;
-import com.pedrocoelho.restwebservices.learningrestwebservices.user.User;
+import com.pedrocoelho.restwebservices.learningrestwebservices.models.Post;
+import com.pedrocoelho.restwebservices.learningrestwebservices.models.User;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;

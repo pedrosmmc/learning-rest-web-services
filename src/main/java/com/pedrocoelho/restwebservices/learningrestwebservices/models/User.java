@@ -1,7 +1,5 @@
-package com.pedrocoelho.restwebservices.learningrestwebservices.user;
+package com.pedrocoelho.restwebservices.learningrestwebservices.models;
 
-import com.pedrocoelho.restwebservices.learningrestwebservices.comment.Comment;
-import com.pedrocoelho.restwebservices.learningrestwebservices.post.Post;
 import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
@@ -48,7 +46,7 @@ public class User extends RepresentationModel<User> {
         this.birthDate = birthDate;
     }
 
-    Long getId() {
+    public Long getId() {
         return id;
     }
 

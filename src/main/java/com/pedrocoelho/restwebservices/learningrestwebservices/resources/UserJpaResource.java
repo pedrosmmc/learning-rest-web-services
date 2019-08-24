@@ -1,13 +1,11 @@
-package com.pedrocoelho.restwebservices.learningrestwebservices.user;
+package com.pedrocoelho.restwebservices.learningrestwebservices.resources;
 
-import com.pedrocoelho.restwebservices.learningrestwebservices.comment.Comment;
-import com.pedrocoelho.restwebservices.learningrestwebservices.comment.CommentRepository;
-import com.pedrocoelho.restwebservices.learningrestwebservices.exception.CommentNotFoundException;
-import com.pedrocoelho.restwebservices.learningrestwebservices.exception.PostNotFoundException;
-import com.pedrocoelho.restwebservices.learningrestwebservices.exception.UserNotFoundException;
-import com.pedrocoelho.restwebservices.learningrestwebservices.post.Post;
-import com.pedrocoelho.restwebservices.learningrestwebservices.post.PostRepository;
-import org.hibernate.type.EntityType;
+import com.pedrocoelho.restwebservices.learningrestwebservices.models.Comment;
+import com.pedrocoelho.restwebservices.learningrestwebservices.exceptions.CommentNotFoundException;
+import com.pedrocoelho.restwebservices.learningrestwebservices.exceptions.PostNotFoundException;
+import com.pedrocoelho.restwebservices.learningrestwebservices.exceptions.UserNotFoundException;
+import com.pedrocoelho.restwebservices.learningrestwebservices.models.User;
+import com.pedrocoelho.restwebservices.learningrestwebservices.models.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;

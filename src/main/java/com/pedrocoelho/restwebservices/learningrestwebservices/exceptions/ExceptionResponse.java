@@ -1,7 +1,5 @@
-package com.pedrocoelho.restwebservices.learningrestwebservices.exception;
+package com.pedrocoelho.restwebservices.learningrestwebservices.exceptions;
 
-
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Date;
 

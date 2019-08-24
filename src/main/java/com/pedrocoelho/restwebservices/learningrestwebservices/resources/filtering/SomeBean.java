@@ -1,8 +1,6 @@
-package com.pedrocoelho.restwebservices.learningrestwebservices.filtering;
+package com.pedrocoelho.restwebservices.learningrestwebservices.resources.filtering;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 //@JsonIgnoreProperties(value = {"field1"}) // Static filtering
 @JsonFilter("SomeBeanFilter")

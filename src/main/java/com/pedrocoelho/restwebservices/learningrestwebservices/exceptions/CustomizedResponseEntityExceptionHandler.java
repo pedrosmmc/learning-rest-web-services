@@ -1,4 +1,4 @@
-package com.pedrocoelho.restwebservices.learningrestwebservices.exception;
+package com.pedrocoelho.restwebservices.learningrestwebservices.exceptions;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
