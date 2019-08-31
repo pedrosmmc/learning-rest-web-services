@@ -14,7 +14,7 @@ import java.util.List;
 public class User extends RepresentationModel<User> {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull(message = "Who is the owner of this ad?")
@@ -28,7 +28,7 @@ public class User extends RepresentationModel<User> {
     @Past
     private Date birthDate;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
 //    @Where(clause = "IS_PUBLISHED = 'TRUE'") // DB FILTERING
     private List<Post> posts;
 

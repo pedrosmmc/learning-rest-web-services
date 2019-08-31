@@ -13,14 +13,14 @@ import java.util.Date;
 public class Comment {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
     private String text;
 
     @CreatedDate
-    @GeneratedValue //TODO: gerar a data
+    @GeneratedValue
     private Date created;
 
     @ManyToOne
@@ -30,8 +30,6 @@ public class Comment {
     @ManyToOne
     @JsonIgnore
     private Post post;
-
-
 
     public Date getCreated() {
         return created;

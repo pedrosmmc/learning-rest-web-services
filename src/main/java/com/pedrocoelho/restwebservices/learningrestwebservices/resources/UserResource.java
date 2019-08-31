@@ -23,14 +23,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Transactional
 @RestController
-public class UserJpaResource {
+public class UserResource {
     private UserRepository userRepository;
     private PostRepository postRepository;
     private CommentRepository commentRepository;
 
-    public UserJpaResource(UserRepository userRepository,
-                           PostRepository postRepository,
-                           CommentRepository commentRepository) {
+    public UserResource(UserRepository userRepository,
+                        PostRepository postRepository,
+                        CommentRepository commentRepository) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
@@ -145,6 +145,9 @@ public class UserJpaResource {
         if(!user.getId().equals(record.getUser().getId()))
             throw new PostNotFoundException("User has no privileges for alter this post!");
 
+        if (post.getTitle() != null)
+            record.setTitle(post.getTitle());
+
         if (post.getDescription() != null)
             record.setDescription(post.getDescription());
 
@@ -188,7 +191,11 @@ public class UserJpaResource {
         Post post = findPost(pid);
         Comment comment = findComment(id);
 
-        //TODO: check all sequence
+        if(!user.getId().equals(post.getUser().getId()))
+            throw new PostNotFoundException(pid.toString());
+
+        if(!post.getId().equals(comment.getPost().getId()))
+            throw new CommentNotFoundException(id.toString());
 
         EntityModel<Comment> model = new EntityModel<>(comment);
         WebMvcLinkBuilder linkToAllPostComments = linkTo(methodOn(this.getClass()).retrieveUserPostComments(pid));
@@ -227,14 +234,16 @@ public class UserJpaResource {
     public EntityModel<Comment> updateUserPostComment(@PathVariable Long uid, @PathVariable Long pid, @PathVariable Long id, @RequestBody Comment comment) {
         User user = findUser(uid);
         Post post = findPost(pid);
+        Comment record = findComment(id);
 
         if(!user.getId().equals(post.getUser().getId()))
             throw new PostNotFoundException("User has no privileges for this post!");
 
-        Comment record = findComment(id);
-
-        if(!user.getId().equals(comment.getUser().getId()))
+        if(!user.getId().equals(record.getUser().getId()))
             throw new CommentNotFoundException("User has no privileges for this comment!");
+
+        if(!post.getId().equals(record.getPost().getId()))
+            throw new CommentNotFoundException(id.toString());
 
         if (comment.getText() != null)
             record.setText(comment.getText());
@@ -242,6 +251,7 @@ public class UserJpaResource {
         commentRepository.save(record);
 
         EntityModel<Comment> model = new EntityModel<>(record);
+
         WebMvcLinkBuilder linkToAllPostComments = linkTo(methodOn(this.getClass()).retrieveUserPostComments(pid));
         model.add(linkToAllPostComments.withRel("post-comments"));
         WebMvcLinkBuilder linkToAllUserPosts = linkTo(methodOn(this.getClass()).retrieveUserPosts(uid));
@@ -252,21 +262,21 @@ public class UserJpaResource {
         return model;
     }
 
-    private User findUser(@PathVariable Long uid) {
+    private User findUser(Long uid) {
         Optional<User> optUser = userRepository.findById(uid);
         if (optUser.isEmpty())
             throw new UserNotFoundException(uid.toString());
         return optUser.get();
     }
 
-    private Post findPost(@PathVariable Long id) {
+    private Post findPost(Long id) {
         Optional<Post> postOptional = postRepository.findById(id);
         if (postOptional.isEmpty())
             throw new PostNotFoundException(id.toString());
         return postOptional.get();
     }
 
-    private Comment findComment(@PathVariable Long id) {
+    private Comment findComment(Long id) {
         Optional<Comment> commentOptional = commentRepository.findById(id);
         if (commentOptional.isEmpty())
             throw new CommentNotFoundException(id.toString());
