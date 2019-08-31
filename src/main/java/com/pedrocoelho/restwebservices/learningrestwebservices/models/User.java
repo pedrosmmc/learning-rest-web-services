@@ -28,11 +28,11 @@ public class User extends RepresentationModel<User> {
     @Past
     private Date birthDate;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 //    @Where(clause = "IS_PUBLISHED = 'TRUE'") // DB FILTERING
     private List<Post> posts;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy="user", cascade = CascadeType.ALL)
     private List<Comment> comments;
 
     protected User() {

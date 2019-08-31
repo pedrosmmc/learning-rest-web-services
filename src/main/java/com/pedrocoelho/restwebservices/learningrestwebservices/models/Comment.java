@@ -23,13 +23,11 @@ public class Comment {
     @GeneratedValue //TODO: gerar a data
     private Date created;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn
+    @ManyToOne
     @JsonIgnore
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn
+    @ManyToOne
     @JsonIgnore
     private Post post;
 

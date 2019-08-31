@@ -6,7 +6,7 @@ import com.pedrocoelho.restwebservices.learningrestwebservices.exceptions.PostNo
 import com.pedrocoelho.restwebservices.learningrestwebservices.exceptions.UserNotFoundException;
 import com.pedrocoelho.restwebservices.learningrestwebservices.models.User;
 import com.pedrocoelho.restwebservices.learningrestwebservices.models.Post;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -26,35 +24,37 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Transactional
 @RestController
 public class UserJpaResource {
-
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private PostRepository postRepository;
-
-    @Autowired
     private CommentRepository commentRepository;
 
-    @GetMapping("/jpa/users")
-    public List<User> retrieveAllUsers() {
+    public UserJpaResource(UserRepository userRepository,
+                           PostRepository postRepository,
+                           CommentRepository commentRepository) {
+        this.userRepository = userRepository;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+    }
+
+    @GetMapping("/users")
+    public List<User> retrieveUsers() {
         return userRepository.findAll();
     }
 
-    @GetMapping("/jpa/users/{id}")
+    @GetMapping("/users/{id}")
     public EntityModel<User> retrieveUser(@PathVariable Long id) {
         Optional<User> user = userRepository.findById(id);
         if (user.isEmpty())
             throw new UserNotFoundException(id.toString());
 
         EntityModel<User> model = new EntityModel<>(user.get());
-        WebMvcLinkBuilder linkTo = linkTo(methodOn(this.getClass()).retrieveAllUsers());
+        WebMvcLinkBuilder linkTo = linkTo(methodOn(this.getClass()).retrieveUsers());
         model.add(linkTo.withRel("all-users"));
 
         return model;
     }
 
-    @PostMapping("/jpa/users")
+    @PostMapping("/users")
     public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
         User createdUser = userRepository.save(user);
         // constructs a new URI from the request and send it back with the {id} of the created user
@@ -66,18 +66,15 @@ public class UserJpaResource {
         return ResponseEntity.created(location).build();
     }
 
-    @DeleteMapping("/jpa/users/{id}")
+    @DeleteMapping("/users/{id}")
     public void deleteUser(@PathVariable Long id) {
         userRepository.deleteById(id);
     }
 
-    @PatchMapping("/jpa/users/{id}")
+    @PatchMapping("/users/{id}")
     public EntityModel<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        Optional<User> userOptional = userRepository.findById(id);
-        if (userOptional.isEmpty())
-            throw new UserNotFoundException(id.toString());
+        User updateUser = findUser(id);
 
-        User updateUser = userOptional.get();
         if (user.getName() != null)
             updateUser.setName(user.getName());
         if (user.getEmail() != null)
@@ -87,38 +84,36 @@ public class UserJpaResource {
         User updatedUser = userRepository.save(updateUser);
 
         EntityModel<User> model = new EntityModel<>(updateUser);
-        WebMvcLinkBuilder linkTo = linkTo(methodOn(this.getClass()).retrieveAllUsers());
+        WebMvcLinkBuilder linkTo = linkTo(methodOn(this.getClass()).retrieveUsers());
         model.add(linkTo.withRel("all-users"));
 
         return model;
     }
 
-    @GetMapping("/jpa/users/{id}/posts")
-    public List<Post> retrieveAllUserPosts(@PathVariable Long id) {
-        Optional<User> userOptional = userRepository.findById(id);
-        if (userOptional.isEmpty())
-            throw new UserNotFoundException(id.toString());
-
-        return userOptional.get().getPosts();
+    @GetMapping("/users/{id}/posts")
+    public List<Post> retrieveUserPosts(@PathVariable Long id) {
+        return findUser(id).getPosts();
     }
 
-    @GetMapping("/jpa/users/{id_user}/posts/{id}")
-    public EntityModel<Post> retrieveUserPost(@PathVariable Long id_user, @PathVariable Long id) {
-        Optional<Post> post = postRepository.findById(id);
-        if (post.isEmpty())
-            throw new UserNotFoundException(id.toString());
+    @GetMapping("/users/{uid}/posts/{id}")
+    public EntityModel<Post> retrieveUserPost(@PathVariable Long uid, @PathVariable Long id) {
+        User user = findUser(uid);
+        Post post = findPost(id);
 
-        EntityModel<Post> model = new EntityModel<>(post.get());
-        WebMvcLinkBuilder linkToAllUserPosts = linkTo(methodOn(this.getClass()).retrieveAllUserPosts(id_user));
+        if (!post.getUser().getId().equals(user.getId()))
+            throw new PostNotFoundException("Post " + id + " not belong to this user!");
+
+        EntityModel<Post> model = new EntityModel<>(post);
+        WebMvcLinkBuilder linkToAllUserPosts = linkTo(methodOn(this.getClass()).retrieveUserPosts(uid));
         model.add(linkToAllUserPosts.withRel("all-posts"));
-        WebMvcLinkBuilder linkToAllUsers = linkTo(methodOn(this.getClass()).retrieveAllUsers());
+        WebMvcLinkBuilder linkToAllUsers = linkTo(methodOn(this.getClass()).retrieveUsers());
         model.add(linkToAllUsers.withRel("all-users"));
 
         return model;
     }
 
-    @PostMapping("/jpa/users/{id}/posts")
-    public ResponseEntity<Post> createPost(@PathVariable Long id, @RequestBody Post post) {
+    @PostMapping("/users/{id}/posts")
+    public ResponseEntity<Post> createUserPost(@PathVariable Long id, @RequestBody Post post) {
         Optional<User> userOptional = userRepository.findById(id);
         if (userOptional.isEmpty())
             throw new UserNotFoundException(id.toString());
@@ -136,19 +131,19 @@ public class UserJpaResource {
     }
 
 
-//TODO:
+    //TODO: solve this situation
 //{
 //    "timestamp": "2019-08-17T12:57:53.926+0000",
 //        "message": "Could not commit JPA transaction; nested exception is javax.persistence.RollbackException: Error while committing the transaction",
-//        "details": "uri=/jpa/users/3331/posts/4441"
+//        "details": "uri=/users/3331/posts/4441"
 //}
-    @PatchMapping("/jpa/users/{uid}/posts/{id}")
-    public EntityModel<Post> updatePost(@PathVariable Long uid, @PathVariable Long id, @RequestBody Post post) {
-        Optional<Post> postOptional = postRepository.findById(id);
-        if (postOptional.isEmpty())
-            throw new PostNotFoundException(id.toString());
+    @PatchMapping("/users/{uid}/posts/{id}")
+    public EntityModel<Post> updateUserPost(@PathVariable Long uid, @PathVariable Long id, @RequestBody Post post) {
+        User user = findUser(uid);
+        Post record = findPost(id);
 
-        Post record = postOptional.get();
+        if(!user.getId().equals(record.getUser().getId()))
+            throw new PostNotFoundException("User has no privileges for alter this post!");
 
         if (post.getDescription() != null)
             record.setDescription(post.getDescription());
@@ -156,60 +151,60 @@ public class UserJpaResource {
         postRepository.save(record);
 
         EntityModel<Post> model = new EntityModel<>(record);
-        WebMvcLinkBuilder linkToAllPostComments = linkTo(methodOn(this.getClass()).retrieveAllPostComments(id));
+        WebMvcLinkBuilder linkToAllPostComments = linkTo(methodOn(this.getClass()).retrieveUserPostComments(id));
         model.add(linkToAllPostComments.withRel("post-comments"));
-        WebMvcLinkBuilder linkToAllUserPosts = linkTo(methodOn(this.getClass()).retrieveAllUserPosts(uid));
+        WebMvcLinkBuilder linkToAllUserPosts = linkTo(methodOn(this.getClass()).retrieveUserPosts(uid));
         model.add(linkToAllUserPosts.withRel("user-posts"));
-        WebMvcLinkBuilder linkToAllUsers = linkTo(methodOn(this.getClass()).retrieveAllUsers());
+        WebMvcLinkBuilder linkToAllUsers = linkTo(methodOn(this.getClass()).retrieveUsers());
         model.add(linkToAllUsers.withRel("users"));
 
         return model;
     }
 
-    @DeleteMapping("/jpa/users/{id}/posts/{id}")
-    public void deletePost(@PathVariable Long id) {
+    @DeleteMapping("/users/{uid}/posts/{id}")
+    public void deleteUserPost(@PathVariable Long uid, @PathVariable Long id) {
+        User user = findUser(uid);
+        Post post = findPost(id);
+
+        if(!user.getId().equals(post.getUser().getId()))
+            throw new PostNotFoundException("User has no privileges to delete this post!");
+
         postRepository.deleteById(id);
     }
 
-    @GetMapping("/jpa/posts")
-    public List<Post> retriedAllPosts() {
-        return postRepository.findAll();
+    @GetMapping("/users/{uid}/posts/{id}/comments")
+    public List<Comment> retrieveUserPostComments(@PathVariable Long id) {
+        return findPost(id).getComments();
     }
 
-    @GetMapping("/jpa/users/{id}/posts/{id}/comments")
-    public List<Comment> retrieveAllPostComments(@PathVariable Long id) {
-        Optional<Post> postOptional = postRepository.findById(id);
-        if (postOptional.isEmpty())
-            throw new PostNotFoundException(id.toString());
-
-        return postOptional.get().getComments();
+    @GetMapping("/users/{uid}/comments")
+    public List<Comment> retrieveUserComments(@PathVariable Long uid) {
+        return commentRepository.findAllByUserId(uid);
     }
 
-    @GetMapping("/jpa/users/{uid}/posts/{pid}/comments/{id}")
-    public EntityModel<Comment> retrievePostComment(@PathVariable Long uid, @PathVariable Long pid, @PathVariable Long id) {
+    @GetMapping("/users/{uid}/posts/{pid}/comments/{id}")
+    public EntityModel<Comment> retrieveUserPostComment(@PathVariable Long uid, @PathVariable Long pid, @PathVariable Long id) {
+        User user = findUser(uid);
+        Post post = findPost(pid);
+        Comment comment = findComment(id);
 
-        Optional<Comment> commentOptional = commentRepository.findById(id);
-        if (commentOptional.isEmpty())
-            throw new CommentNotFoundException(id.toString());
+        //TODO: check all sequence
 
-        EntityModel<Comment> model = new EntityModel<>(commentOptional.get());
-        WebMvcLinkBuilder linkToAllPostComments = linkTo(methodOn(this.getClass()).retrieveAllPostComments(pid));
+        EntityModel<Comment> model = new EntityModel<>(comment);
+        WebMvcLinkBuilder linkToAllPostComments = linkTo(methodOn(this.getClass()).retrieveUserPostComments(pid));
         model.add(linkToAllPostComments.withRel("post-comments"));
-        WebMvcLinkBuilder linkToAllUserPosts = linkTo(methodOn(this.getClass()).retrieveAllUserPosts(uid));
+        WebMvcLinkBuilder linkToAllUserPosts = linkTo(methodOn(this.getClass()).retrieveUserPosts(uid));
         model.add(linkToAllUserPosts.withRel("user-posts"));
-        WebMvcLinkBuilder linkToAllUsers = linkTo(methodOn(this.getClass()).retrieveAllUsers());
+        WebMvcLinkBuilder linkToAllUsers = linkTo(methodOn(this.getClass()).retrieveUsers());
         model.add(linkToAllUsers.withRel("users"));
 
         return model;
     }
 
-    @PostMapping("/jpa/users/{id}/posts/{id}/comments")
-    public ResponseEntity<Comment> createComment(@PathVariable Long id, @RequestBody Comment comment) {
-        Optional<Post> postOptional = postRepository.findById(id);
-        if (postOptional.isEmpty())
-            throw new UserNotFoundException(id.toString());
+    @PostMapping("/users/{id}/posts/{id}/comments")
+    public ResponseEntity<Comment> createUserPostComment(@PathVariable Long id, @RequestBody Comment comment) {
+        Post post = findPost(id);
 
-        Post post = postOptional.get();
         comment.setPost(post);
         comment.setCreated(new Date());
         Comment createdComment = commentRepository.save(comment);
@@ -221,18 +216,25 @@ public class UserJpaResource {
         return ResponseEntity.created(location).build();
     }
 
-    @DeleteMapping("/jpa/users/{id}/posts/{id}/comments/{id}")
-    public void deleteComment(@PathVariable Long id) {
+    @DeleteMapping("/users/{id}/posts/{id}/comments/{id}")
+    public void deleteUserPostComment(@PathVariable Long id) {
+
+        // TODO: check privileges
         commentRepository.deleteById(id);
     }
 
-    @PatchMapping("/jpa/users/{uid}/posts/{pid}/comments/{id}")
-    public EntityModel<Comment> updateComment(@PathVariable Long uid, @PathVariable Long pid, @PathVariable Long id, @RequestBody Comment comment) {
-        Optional<Comment> commentOptional = commentRepository.findById(id);
-        if (commentOptional.isEmpty())
-            throw new CommentNotFoundException(id.toString());
+    @PatchMapping("/users/{uid}/posts/{pid}/comments/{id}")
+    public EntityModel<Comment> updateUserPostComment(@PathVariable Long uid, @PathVariable Long pid, @PathVariable Long id, @RequestBody Comment comment) {
+        User user = findUser(uid);
+        Post post = findPost(pid);
 
-        Comment record = commentOptional.get();
+        if(!user.getId().equals(post.getUser().getId()))
+            throw new PostNotFoundException("User has no privileges for this post!");
+
+        Comment record = findComment(id);
+
+        if(!user.getId().equals(comment.getUser().getId()))
+            throw new CommentNotFoundException("User has no privileges for this comment!");
 
         if (comment.getText() != null)
             record.setText(comment.getText());
@@ -240,13 +242,34 @@ public class UserJpaResource {
         commentRepository.save(record);
 
         EntityModel<Comment> model = new EntityModel<>(record);
-        WebMvcLinkBuilder linkToAllPostComments = linkTo(methodOn(this.getClass()).retrieveAllPostComments(pid));
+        WebMvcLinkBuilder linkToAllPostComments = linkTo(methodOn(this.getClass()).retrieveUserPostComments(pid));
         model.add(linkToAllPostComments.withRel("post-comments"));
-        WebMvcLinkBuilder linkToAllUserPosts = linkTo(methodOn(this.getClass()).retrieveAllUserPosts(uid));
+        WebMvcLinkBuilder linkToAllUserPosts = linkTo(methodOn(this.getClass()).retrieveUserPosts(uid));
         model.add(linkToAllUserPosts.withRel("user-posts"));
-        WebMvcLinkBuilder linkToAllUsers = linkTo(methodOn(this.getClass()).retrieveAllUsers());
+        WebMvcLinkBuilder linkToAllUsers = linkTo(methodOn(this.getClass()).retrieveUsers());
         model.add(linkToAllUsers.withRel("users"));
 
         return model;
+    }
+
+    private User findUser(@PathVariable Long uid) {
+        Optional<User> optUser = userRepository.findById(uid);
+        if (optUser.isEmpty())
+            throw new UserNotFoundException(uid.toString());
+        return optUser.get();
+    }
+
+    private Post findPost(@PathVariable Long id) {
+        Optional<Post> postOptional = postRepository.findById(id);
+        if (postOptional.isEmpty())
+            throw new PostNotFoundException(id.toString());
+        return postOptional.get();
+    }
+
+    private Comment findComment(@PathVariable Long id) {
+        Optional<Comment> commentOptional = commentRepository.findById(id);
+        if (commentOptional.isEmpty())
+            throw new CommentNotFoundException(id.toString());
+        return commentOptional.get();
     }
 }

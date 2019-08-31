@@ -33,7 +33,7 @@ public class Post {
 
     private boolean isPublished;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JsonIgnore
     private User user;
 
