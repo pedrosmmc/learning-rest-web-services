@@ -7,6 +7,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -30,10 +31,10 @@ public class User extends RepresentationModel<User> {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
 //    @Where(clause = "IS_PUBLISHED = 'TRUE'") // DB FILTERING
-    private List<Post> posts;
+    private List<Post> posts = new ArrayList<>();
 
-    @OneToMany(mappedBy="user", cascade = CascadeType.ALL)
-    private List<Comment> comments;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Comment> comments = new ArrayList<>();
 
     protected User() {
     }
